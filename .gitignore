@@ -1,0 +1,29 @@
+# ---- Rust ----
+/target/
+**/*.rs.bk
+Cargo.lock        # this is a learning repo, not a published binary crate
+
+# ---- Verification harness scratch (keep the .py scripts, ignore generated output) ----
+.verify/blocks/
+.verify/proj/
+.verify/*.meta
+.verify/report.json
+__pycache__/
+*.pyc
+
+# ---- Local productivity workflow (personal; not part of the public course) ----
+# Remove these lines if you'd like to publish your task/memory workflow too.
+dashboard.html
+TASKS.md
+CLAUDE.md
+memory/
+
+# ---- Local agent / editor config ----
+.claude/
+.vscode/
+.idea/
+
+# ---- OS noise ----
+Thumbs.db
+.DS_Store
+desktop.ini
