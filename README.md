@@ -2,6 +2,7 @@
 
 > A beginner-friendly Rust course that makes ownership, borrowing, and lifetimes *click* — using everyday analogies, runnable examples, and a peek beneath the language at how memory and the OS really work.
 
+[![Verify course examples](https://github.com/ramyeshbt/easy_rust/actions/workflows/verify.yml/badge.svg)](https://github.com/ramyeshbt/easy_rust/actions/workflows/verify.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Rust Edition](https://img.shields.io/badge/Rust-2021-orange.svg)](https://doc.rust-lang.org/edition-guide/)
 [![Runs in Playground](https://img.shields.io/badge/Try%20it-Rust%20Playground-brightgreen.svg)](https://play.rust-lang.org)

@@ -1,11 +1,22 @@
 #!/usr/bin/env python3
 """Assemble each mini-project's BUILD steps into one complete program and compile it.
 This removes the per-block isolation noise (Step 2 needs Step 1's types)."""
-import os, re, subprocess
+import os, re, subprocess, sys, shutil
+
+def find_rustc():
+    """Prefer rustc on PATH (CI/Linux); fall back to a rustup install dir."""
+    p = shutil.which("rustc")
+    if p:
+        return p
+    for name in ("rustc.exe", "rustc"):
+        cand = os.path.expanduser(os.path.join("~", ".cargo", "bin", name))
+        if os.path.exists(cand):
+            return cand
+    sys.exit("error: rustc not found on PATH or in ~/.cargo/bin")
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "content", "05_mini_projects.md")
-RUSTC = os.path.expanduser(r"~\.cargo\bin\rustc.exe")
+RUSTC = find_rustc()
 WORK = os.path.join(ROOT, ".verify", "proj")
 os.makedirs(WORK, exist_ok=True)
 
@@ -85,11 +96,20 @@ for k in range(len(proj_spans) - 1):
     results.append((num, p.returncode, errs, warns, src))
 
 print("=== FULL MINI-PROJECT COMPILE (assembled build steps) ===\n")
+failed = 0
 for num, rc, errs, warns, src in results:
     status = "✅ COMPILES" if rc == 0 else "❌ ERRORS"
     print(f"Project {num}: {status}  ({len(warns)} warning(s))")
     for e in errs[:8]:
         print("    " + e)
     if rc != 0:
+        failed += 1
         print(f"    (assembled source: {src})")
     print()
+
+# ---- CI gate ----
+if failed:
+    print(f"FAIL: {failed} mini-project(s) did not compile.")
+    sys.exit(1)
+print("OK: all mini-projects compile.")
+sys.exit(0)

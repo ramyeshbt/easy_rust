@@ -1,0 +1,38 @@
+name: Verify course examples
+
+# Compiler-checks every Rust snippet in the course and confirms that the
+# error codes the lessons claim are exactly what rustc produces. Runs the
+# borrow/type checker only (rustc --emit=metadata), so no linker is needed.
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:   # allow manual runs from the Actions tab
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Show toolchain versions
+        run: |
+          rustc --version
+          python --version
+
+      - name: Verify every snippet & claimed error code
+        run: python .verify/verify.py
+
+      - name: Verify mini-projects compile end-to-end
+        run: python .verify/verify_projects.py

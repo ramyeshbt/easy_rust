@@ -1,11 +1,22 @@
 #!/usr/bin/env python3
 """Extract ```rust blocks from the course, compile each with rustc --emit=metadata
 (type+borrow check, no linker), and report actual vs course-claimed outcomes."""
-import os, re, subprocess, sys, tempfile, json
+import os, re, subprocess, sys, shutil, json
+
+def find_rustc():
+    """Prefer rustc on PATH (CI/Linux); fall back to a rustup install dir."""
+    p = shutil.which("rustc")
+    if p:
+        return p
+    for name in ("rustc.exe", "rustc"):
+        cand = os.path.expanduser(os.path.join("~", ".cargo", "bin", name))
+        if os.path.exists(cand):
+            return cand
+    sys.exit("error: rustc not found on PATH or in ~/.cargo/bin")
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTENT = os.path.join(ROOT, "content")
-RUSTC = os.path.expanduser(r"~\.cargo\bin\rustc.exe")
+RUSTC = find_rustc()
 WORK = os.path.join(ROOT, ".verify", "blocks")
 os.makedirs(WORK, exist_ok=True)
 
@@ -118,11 +129,24 @@ def main():
             print(f"  {r['file']}:{r['line']}  claimed={r['claimed_codes']} exp_marker={r['exp_fail_marker']}")
     print()
     print("=== CLAIMED-vs-ACTUAL ERROR CODE CHECK ===")
+    mismatches = []
     for r in results:
         if r["claimed_codes"]:
             ok = set(r["claimed_codes"]).issubset(set(r["actual_codes"]))
             status = "MATCH" if ok else "MISMATCH"
             print(f"  [{status}] {r['file']}:{r['line']}  claimed={r['claimed_codes']} actual={r['actual_codes']}")
+            if not ok:
+                mismatches.append(r)
+
+    # ---- CI gate ----
+    # Fail ONLY when the course explicitly names an error code that rustc does
+    # not actually produce. Fragment blocks that error in isolation are expected
+    # (see verify_projects.py for the real end-to-end project compile check).
+    if mismatches:
+        print(f"\nFAIL: {len(mismatches)} block(s) claim an error code rustc did not emit.")
+        sys.exit(1)
+    print("\nOK: every explicitly-claimed compiler error code was confirmed by rustc.")
+    sys.exit(0)
 
 if __name__ == "__main__":
     main()
