@@ -129,7 +129,59 @@ fn make_greeter(formal: bool) -> impl Greet {
 }
 ```
 
-> ⚠️ Limitation: both branches must return the **same concrete type**. To return *different* types, you need `Box<dyn Greet>` — covered in Part 4.
+> ⚠️ **Limitation: both branches must return the same concrete type.** The `impl Trait` return position is resolved at compile time — Rust needs to know one concrete type for the whole function.
+
+**See the limit in action — what if you try to return two different types?**
+
+```rust
+// ❌ This does NOT compile — each branch returns a different concrete type
+trait Greet { fn hello(&self) -> String; }
+struct Person { name: String }
+struct Robot  { model: String }
+impl Greet for Person { fn hello(&self) -> String { format!("Hi, I'm {}!", self.name) } }
+impl Greet for Robot  { fn hello(&self) -> String { format!("HELLO. {}.", self.model) } }
+
+fn make_greeter_broken(formal: bool) -> impl Greet {
+    if formal {
+        Person { name: String::from("Butler") }      // type: Person
+    } else {
+        Robot { model: String::from("RX-7") }        // ❌ type: Robot — E0308 mismatch
+    }
+}
+fn main() { let _ = make_greeter_broken(true); }
+```
+
+> **Error:** `error[E0308]: 'if' and 'else' have incompatible types`
+>
+> The `if` arm is `Person`, the `else` arm is `Robot`. Rust can't pick one concrete type for the return — it would need to know at compile time, and here it depends on a runtime condition.
+
+**Fix: use `Box<dyn Greet>` to let the concrete type be resolved at runtime:**
+
+```rust
+// ✅ Box<dyn Greet> allows returning different concrete types
+trait Greet { fn hello(&self) -> String; }
+struct Person { name: String }
+struct Robot  { model: String }
+impl Greet for Person { fn hello(&self) -> String { format!("Hi, I'm {}!", self.name) } }
+impl Greet for Robot  { fn hello(&self) -> String { format!("HELLO. I AM MODEL {}.", self.model) } }
+
+fn make_greeter(formal: bool) -> Box<dyn Greet> {
+    if formal {
+        Box::new(Person { name: String::from("Butler") })
+    } else {
+        Box::new(Robot { model: String::from("RX-7") })
+    }
+}
+
+fn main() {
+    let g = make_greeter(true);
+    println!("{}", g.hello());   // Hi, I'm Butler!
+    let g2 = make_greeter(false);
+    println!("{}", g2.hello());  // HELLO. I AM MODEL RX-7.
+}
+```
+
+This is exactly the bridge to Part 4 — when the concrete type isn't known until runtime, `Box<dyn Trait>` is the right tool.
 
 ---
 

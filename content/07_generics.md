@@ -327,6 +327,37 @@ let parsed: Result<i32, _> = "42".parse();
 
 Generics are everywhere in Rust. Understanding them demystifies the standard library.
 
+### When the compiler can't infer: The Turbofish `::<>`
+
+Most of the time Rust infers which concrete type to use from context. But
+sometimes — especially with `.parse()` and `.collect()` — there isn't enough
+context and the compiler asks you to be explicit. The syntax for this is called
+**turbofish** (`::<>`), and it sits right after the function name:
+
+```rust
+// Type annotation on the variable (what you've seen so far)
+let n: i32 = "42".parse().unwrap();
+
+// Turbofish — same thing, annotation lives at the call site instead
+let n = "42".parse::<i32>().unwrap();
+
+// Turbofish with collect — tell it what container to build
+let doubled: Vec<i32> = vec![1, 2, 3].iter().map(|x| x * 2).collect();
+// OR equivalently:
+let doubled = vec![1, 2, 3].iter().map(|x| x * 2).collect::<Vec<i32>>();
+```
+
+```
+    "42" . parse ::<i32> ()
+              ↑    ↑↑↑↑↑
+           method  turbofish: "the concrete type T goes here"
+                   tells the compiler: stamp out parse::<i32>, not parse::<f64>
+```
+
+> **When you'll see it:** Mostly with `.parse::<T>()`, `.collect::<Vec<T>>()`,
+> and `HashMap::<K, V>::new()`. If the compiler says *"cannot infer type for
+> type parameter"*, turbofish is the fix.
+
 ---
 
 ## 🔍 Deep Dive — Monomorphization: Zero Runtime Cost
@@ -365,12 +396,15 @@ fn largest<T>(list: &[T])        let mut largest = &list[0];
 At **runtime**, there is no generic. There is no type dispatch. There is no overhead. The CPU executes the same tight, optimised machine code it would if you'd hand-written each version.
 
 ```
-Language        Generics cost
-──────────────────────────────
-Java / C#       Virtual dispatch or boxing → runtime overhead
-Python          Everything is a pointer → overhead on every op
-C++ templates   Monomorphization → zero overhead ✅ (same as Rust)
-Rust generics   Monomorphization → zero overhead ✅
+Language        Generics strategy                                  Runtime cost
+────────────────────────────────────────────────────────────────────────────────
+Java            Type erasure — generics erased at compile time;    Boxing overhead
+                value types (int, double) get boxed to Object      on every generic op
+C#              Reified generics — value types fully specialised;  Near-zero for
+                int stays int, no boxing for structs               value types ✅
+C++ templates   Monomorphization — separate copy per type used     Zero overhead ✅
+Rust generics   Monomorphization — same as C++ templates           Zero overhead ✅
+Python          Everything is a heap pointer (PyObject*)           Overhead on every op
 ```
 
 The tradeoff: **compile time and binary size increase** slightly (more code to generate), but runtime performance never suffers. For most programs this is an excellent deal.
@@ -535,5 +569,5 @@ They're equivalent for simple cases. Use `impl Trait` for cleaner signatures whe
 
 ---
 
-*Next: [Chapter 8 — Closures & Iterators: Rust's Functional Side](08_closures_iterators.md)*
+*Next: [Chapter 8 — Closures & Iterators: Rust's Functional Side →](08_closures_iterators.md)*
 *Previous: [Chapter 6 — Traits](06_traits.md)*

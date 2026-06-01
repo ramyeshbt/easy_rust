@@ -42,6 +42,9 @@ Work through these in order. Each builds on the last.
 | 3 | [**Playground Examples**](content/03_playground_examples.md) | 9 hands-on sections: variables, types, control flow, functions, structs, enums, error handling |
 | 4 | [**Cheat Cards**](content/04_cheat_cards.md) | 12 one-page visual summaries + a self-quiz and spaced-repetition schedule |
 | 5 | [**Mini-Projects**](content/05_mini_projects.md) | 5 themed builds (name card, calculator, grade tracker, memory explorer, todo app) with system-level deep dives |
+| 6 | [**Traits — Job Descriptions for Types**](content/06_traits.md) | Define contracts, implement them, static vs dynamic dispatch, vtables, orphan rule |
+| 7 | [**Generics — Write Once, Use With Many Types**](content/07_generics.md) | Cookie-cutter analogy, trait bounds, monomorphization, turbofish, zero-cost abstraction |
+| 8 | [**Closures & Iterators — Rust's Functional Side**](content/08_closures_iterators.md) | To-go bag analogy, Fn/FnMut/FnOnce, lazy assembly lines, iterator adapters & consumers, danger zones |
 
 ## How to use this course
 
@@ -57,7 +60,7 @@ Work through these in order. Each builds on the last.
 
 ## ✅ Verified examples
 
-The code in this course isn't just written — it's **compiler-checked**. A small harness in [`.verify/`](.verify/README.md) extracts every Rust snippet and runs it through `rustc`'s type and borrow checker, and confirms that the errors the course *claims* (E0382, E0502, E0597, E0106, …) are exactly the errors `rustc` actually produces. All five mini-projects compile cleanly.
+The code in this course isn't just written — it's **compiler-checked**. A small harness in [`.verify/`](.verify/README.md) extracts every Rust snippet and runs it through `rustc`'s type and borrow checker, and confirms that the errors the course *claims* (E0382, E0502, E0597, E0106, E0308, E0599, E0117, E0038, E0369, E0277, …) are exactly the errors `rustc` actually produces. All five mini-projects compile cleanly.
 
 See [`.verify/README.md`](.verify/README.md) to run it yourself.
 
